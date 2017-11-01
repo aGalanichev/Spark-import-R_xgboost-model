@@ -1,0 +1,51 @@
+group 'PreProcess'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'scala'
+apply plugin: 'application'
+
+mainClassName = "MainObj"
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    uberJar
+    compile.extendsFrom(uberJar)
+    uberJar.transitive = true
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+
+    from {
+        configurations.uberJar.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+dependencies {
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.6'
+    compile group: 'org.scala-lang', name: 'scala-actors', version: '2.10.6'
+
+    compile 'org.apache.spark:spark-core_2.10:1.6.0'
+    compile 'org.apache.spark:spark-sql_2.10:1.6.0'
+    compile 'org.apache.spark:spark-mllib_2.10:1.6.0'
+    compile group: 'org.apache.spark', name: 'spark-hive_2.10', version: '1.6.0'
+
+    uberJar files("C:\\Users\\anton\\IdeaProjects\\scala_maven_import\\target\\scala_maven_import-1.0-SNAPSHOT.jar")
+    uberJar "com.databricks:spark-csv_2.10:1.5.0"
+
+    //uberJar 'org.deeplearning4j:deeplearning4j-core:0.8.0'
+    //uberJar 'org.deeplearning4j:dl4j-spark_2.10:0.8.0_spark_1'
+    //uberJar 'org.nd4j:nd4j-native-platform:0.8.0'
+    //uberJar 'org.nd4j:nd4j-kryo_2.10:0.8.0'
+    //uberJar group: 'org.deeplearning4j', name: 'dl4j-spark_2.10', version: '0.8.0_spark_1'
+}
