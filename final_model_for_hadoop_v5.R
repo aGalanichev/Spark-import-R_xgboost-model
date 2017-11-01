@@ -4,9 +4,7 @@ library(data.table)
 library(bit64)
 library(RODBC)
 
-
 setwd("~/tbank")
-
 
 vars <- readRDS("vars_to_keep_default.RDS")
 vars <- c(vars, "cpe_type")
@@ -24,8 +22,7 @@ DT<-as.data.table(sqlQuery(ch,"SELECT z.*, x.* FROM(
                            CASE WHEN BKI_CREDHIST='1' THEN 'Yes' ELSE 'No' END BKI_CREDHIST, PHONE, '' SPD FROM UAT_DM.as_sample_tb_verify
                            ) a GROUP BY APPLICATION_ID, APPLICATION_DT, BKI_CREDHIST, PHONE, SPD) z
                            JOIN UAT_DM.as_dmsc x ON z.PHONE=x.MSISDN AND CAST(z.APPLICATION_DT AS DATE FORMAT 'DD.MM.YYYY')=x.report_date AND x.depth=30", dec=".", buffsize=100000,rows_at_time=1024, stringsAsFactors=T))
-
-						   
+					   
 output_vector <- DT$SPD
 
 for (k in names(DT))
@@ -45,17 +42,12 @@ for (k in names(DT))
   }
 }
 
-
-
 DT[,`:=`(cv1=sd_day_mou/avg_day_mou, cvr=sd_day_voice_cnt/avg_day_voice_cnt, lbc=log(bc_lifetime+1), SPD=NULL)]
-
 
 drop_these_columns <- which(!(names(DT) %in% vars))
 DT[, (drop_these_columns):=NULL]
 
-
 DT[bc_sd_day_voice_cnt< -90 | bc_sd_day_voice_cnt>90, bc_sd_day_voice_cnt:=0]
-
 
 options(na.action = na.pass)
 msisdn <- DT[,1]
@@ -65,9 +57,7 @@ output_vector <- output_vector[!is.na(output_vector)]
 fmap = r2pmml::genFMap(DT)
 r2pmml::writeFMap(fmap, "xgboost.fmap")
 
-
 model_matrix = r2pmml::genDMatrix(output_vector, DT, "xgboost.svm")
-
 
 param <- list("objective" = "binary:logistic",
               "eval_metric" = "auc",    # evaluation metric
@@ -84,7 +74,6 @@ param <- list("objective" = "binary:logistic",
               #,"max_delta_step"= 3
 )
 
-
 # cv<-xgb.cv(data = model_matrix, label = output_vector, nrounds = 1000,params=param,early.stop.round=50, nfold=5)
 # nrounds=which.max(cv$test.auc.mean)
 nrounds <- 436
@@ -96,6 +85,5 @@ fwrite(res, 'results.csv')
 #xgb.save(bst, "Default_model")
 
 xgb.save(bst, "xgboost.model")
-
 
 xgb.dump(bst, "xgboost.model.txt", fmap = "xgboost.fmap")
