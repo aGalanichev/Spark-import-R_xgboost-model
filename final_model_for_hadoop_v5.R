@@ -5,11 +5,9 @@ library(bit64)
 library(RODBC)
 
 setwd("~/tbank")
-
 vars <- readRDS("vars_to_keep_default.RDS")
 vars <- c(vars, "cpe_type")
 d <- readRDS('datadic.RDS')
-
 
 ch <- odbcConnect("teradata")
 DT<-as.data.table(sqlQuery(ch,"SELECT z.*, x.* FROM(
@@ -60,13 +58,13 @@ r2pmml::writeFMap(fmap, "xgboost.fmap")
 model_matrix = r2pmml::genDMatrix(output_vector, DT, "xgboost.svm")
 
 param <- list("objective" = "binary:logistic",
-              "eval_metric" = "auc",    # evaluation metric
-              "max_depth" = 4,    # maximum depth of tree
-              "eta" = .02,    # step size shrinkage
-              "gamma" = 1.9,    # minimum loss reduction
-              "subsample" = .5,    # part of data instances to grow tree
-              "colsample_bytree" =.5,  # subsample ratio of columns when constructing each tree
-              "min_child_weight" = 6,  # minimum sum of instance weight needed in a child
+              "eval_metric" = "auc",    
+              "max_depth" = 4,    
+              "eta" = .02,    
+              "gamma" = 1.9,   
+              "subsample" = .5,   
+              "colsample_bytree" =.5, 
+              "min_child_weight" = 6,  
               "scale_pos_weight" = 23,
               "tree_method"="hist",
               "lambda" = 3,
